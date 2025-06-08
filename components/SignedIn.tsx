@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import toast, { Toaster } from 'react-hot-toast';
 
 export default function SignedIn() {
   const [trans, setTrans] = useState(true);
@@ -18,23 +19,26 @@ export default function SignedIn() {
 
   const handleAddTransaction = async () => {
     if (trans) {
+      if (!to.trim() || !amount.trim()) {
+        seterr('To and Amount are required');
+        return;
+      }
       if (amount.startsWith('-')) {
-        seterr("Amount cannot be negative");
+        seterr('Amount cannot be negative');
         return;
       }
-      else
-        seterr('');
-    }
-
-    if (!trans) {
+    } else {
+      if (!party.trim() || !lendAmount.trim()) {
+        seterr('To/From and Amount are required');
+        return;
+      }
       if (lendAmount.startsWith('-')) {
-        seterr("Amount cannot be negative");
+        seterr('Amount cannot be negative');
         return;
       }
-      else
-        seterr('');
     }
 
+    seterr('');
 
     const response = await fetch(`/api/trans`, {
       method: 'POST',
@@ -55,21 +59,28 @@ export default function SignedIn() {
         setTo('');
         setAmount('');
         setDescription('');
-      }
-      else {
+      } else {
         setParty('');
         setLendAmount('');
         setLendDesc('');
       }
+
+      toast.success('Transaction added successfully!');
+    } else {
+      toast.error('Failed to add transaction.');
     }
   };
 
-
   return (
-    <div className={`px-4 py-6 space-y-6 `}>
+    <div className="px-4 py-6 space-y-6">
+      <Toaster position="top-right" reverseOrder={false} />
+
       <div className="flex justify-center space-x-4">
         <button
-          onClick={() => setTrans(true)}
+          onClick={() => {
+            setTrans(true);
+            seterr('');
+          }}
           className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 ${trans
             ? 'bg-orange-500 text-white shadow-md'
             : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -78,7 +89,10 @@ export default function SignedIn() {
           Add Transaction
         </button>
         <button
-          onClick={() => setTrans(false)}
+          onClick={() => {
+            setTrans(false);
+            seterr('');
+          }}
           className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 ${!trans
             ? 'bg-orange-500 text-white shadow-md'
             : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -108,6 +122,7 @@ export default function SignedIn() {
               }}
               className="space-y-4"
             >
+              {err && <label className="block text-sm font-medium text-red-500 mb-1">{err}</label>}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300">To</label>
                 <input
@@ -120,7 +135,6 @@ export default function SignedIn() {
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300">Amount</label>
-                {err && <label className="block text-sm font-medium text-red-500 mb-1">{err}</label>}
                 <input
                   type="number"
                   placeholder="Amount (in Rs.)"
@@ -163,7 +177,10 @@ export default function SignedIn() {
 
             <div className="flex justify-center space-x-4">
               <button
-                onClick={() => setLend(true)}
+                onClick={() => {
+                  setLend(true);
+                  seterr('');
+                }}
                 className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 ${Lend
                   ? 'bg-orange-500 text-white shadow-md'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -172,7 +189,10 @@ export default function SignedIn() {
                 Lend
               </button>
               <button
-                onClick={() => setLend(false)}
+                onClick={() => {
+                  setLend(false);
+                  seterr('');
+                }}
                 className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 ${!Lend
                   ? 'bg-orange-500 text-white shadow-md'
                   : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
@@ -189,6 +209,7 @@ export default function SignedIn() {
               }}
               className="space-y-4"
             >
+              {err && <label className="block text-sm font-medium text-red-500 mb-1">{err}</label>}
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300">
                   {Lend ? 'To' : 'From'}
@@ -203,7 +224,6 @@ export default function SignedIn() {
               </div>
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-gray-300">Amount</label>
-                {err && <label className="block text-sm font-medium text-red-500 mb-1">{err}</label>}
                 <input
                   type="number"
                   placeholder="Amount (in Rs.)"
