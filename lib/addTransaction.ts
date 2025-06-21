@@ -17,7 +17,6 @@ export async function AddTransaction(username: string, to: string, amt: Decimal,
 
 
 export async function LendTrans(From: string, username: string, to: string, amt: Decimal, desc: string) {
-    console.log(From, to);
     From = From.toLowerCase();
     to = to.toLowerCase();
 
