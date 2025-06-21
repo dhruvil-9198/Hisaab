@@ -22,18 +22,52 @@ export async function ValidateUser(password: string, email?: string, username?: 
 
         const passkey = user.password;
 
+        let userFrom = await prisma.others.findFirst({
+            where: {
+                userId: user.username,
+                username: "me",
+            }
+        });
+
+        if (!userFrom) {
+            userFrom = await prisma.others.create({
+                data: {
+                    username: "me",
+                    userId: user.username,
+                    balance: 0,
+                }
+            })
+        }
+        
         if (await bcrypt.compare(password, passkey))
             return user;
     }
-
+    
     if (username != '') {
         const user = await prisma.user.findUnique({
             where: { username },
         });
-
+        
         if (!user)
             return null;
-
+        
+        let userFrom = await prisma.others.findFirst({
+            where: {
+                userId: user.username,
+                username: "me",
+            }
+        });
+    
+        if (!userFrom) {
+            userFrom = await prisma.others.create({
+                data: {
+                    username: "me",
+                    userId: user.username,
+                    balance: 0,
+                }
+            })
+        }
+        
         const passkey = user.password;
 
         if (await bcrypt.compare(password, passkey))

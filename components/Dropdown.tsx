@@ -25,13 +25,15 @@ function ChevronDownIcon(props: React.SVGProps<SVGSVGElement>) {
 export default function MultiSelectDropdown({
     parsed,
     setParsed,
-    selectedUsers,
-    setSelectedUsers,
+    setParty,
+    selectedUser,
+    setSelectedUser,
 }: {
     parsed: TransactionType[];
     setParsed: React.Dispatch<React.SetStateAction<TransactionType[]>>;
-    selectedUsers: TransactionType[];
-    setSelectedUsers: React.Dispatch<React.SetStateAction<TransactionType[]>>;
+    setParty: React.Dispatch<React.SetStateAction<string>>
+    selectedUser: TransactionType | undefined;
+    setSelectedUser: React.Dispatch<React.SetStateAction<TransactionType | undefined>>;
 }) {
     const [isOpen, setIsOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
@@ -51,20 +53,18 @@ export default function MultiSelectDropdown({
     }, []);
 
     const toggleUser = (user: TransactionType) => {
-        setSelectedUsers((prev) =>
-            prev.some((u) => u.username === user.username)
-                ? prev.filter((u) => u.username !== user.username)
-                : [...prev, user]
-        );
+        setSelectedUser(user);
+        setParty(user.username);
+        setIsOpen(false);
     };
 
     const handleAddUser = () => {
         const trimmedName = newUserName.trim();
         if (trimmedName && !parsed.some((u) => u.username === trimmedName)) {
             const newUser: TransactionType = {
-                id: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9),
+                id: crypto.randomUUID(),
                 username: trimmedName,
-                userId: crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).substr(2, 9),
+                userId: crypto.randomUUID(),
                 balance: 0,
             };
             setParsed((prev) => [...prev, newUser]);
@@ -74,7 +74,7 @@ export default function MultiSelectDropdown({
 
     return (
         <div
-            className="relative inline-block cursor-pointer text-left w-64"
+            className="relative inline-block text-left w-64"
             ref={dropdownRef}
         >
             <button
@@ -86,9 +86,8 @@ export default function MultiSelectDropdown({
                 className="w-full flex items-center justify-between bg-gray-800 border border-gray-700 rounded-md px-4 py-2 text-left text-white focus:outline-none"
             >
                 <span>
-                    {selectedUsers.length === 0
-                        ? "Select users"
-                        : selectedUsers.map((u) => u.username).join(", ")}
+                    {selectedUser
+                        ? selectedUser.username : "Select user"}
                 </span>
                 <ChevronDownIcon
                     className={`w-5 h-5 transform transition-transform duration-200 ${isOpen ? "rotate-180" : "rotate-0"
@@ -98,38 +97,17 @@ export default function MultiSelectDropdown({
 
             {isOpen && (
                 <div
-                    className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 cursor-pointer rounded-md shadow-lg max-h-60 overflow-y-auto transition-opacity duration-200 opacity-100"
+                    className="absolute z-10 mt-1 w-full bg-gray-800 border border-gray-700 rounded-md shadow-lg max-h-60 overflow-y-auto transition-opacity duration-200 opacity-100"
                     onClick={(e) => e.stopPropagation()}
                 >
-                    <div className="flex justify-between items-center px-3 py-2 text-gray-400 text-sm border-b border-gray-700">
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedUsers(parsed);
-                            }}
-                            className="hover:text-orange-400"
-                        >
-                            Select All
-                        </button>
-                        <button
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedUsers([]);
-                            }}
-                            className="hover:text-orange-400"
-                        >
-                            Clear All
-                        </button>
-                    </div>
-
                     {parsed.map((user) => (
                         <label
-                            key={user.username}
+                            key={user.userId}
                             className="flex items-center px-3 py-2 text-gray-200 hover:bg-gray-700 cursor-pointer"
                         >
                             <input
                                 type="checkbox"
-                                checked={selectedUsers.some((u) => u.username === user.username)}
+                                checked={selectedUser?.username === user.username}
                                 onChange={() => toggleUser(user)}
                                 className="accent-orange-500 mr-2"
                             />
@@ -150,7 +128,7 @@ export default function MultiSelectDropdown({
                                 e.stopPropagation();
                                 handleAddUser();
                             }}
-                            className="text-orange-400 cursor-pointer hover:text-orange-500 ml-2"
+                            className="text-orange-400 hover:text-orange-500 ml-2"
                         >
                             Add
                         </button>

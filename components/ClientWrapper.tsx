@@ -32,7 +32,7 @@ export default function ClientWrapper({others}: ClientWrapperProps) {
               setMode(m as any);
               seterr('');
             }}
-            className={`px-4 py-2 rounded-lg font-semibold transition-transform duration-300 ${mode === m
+            className={`px-4 py-2 rounded-lg font-semibold cursor-pointer transition-transform duration-300 ${mode === m
               ? 'bg-orange-500 text-white shadow-md'
               : 'text-gray-300 hover:text-white'
               }`}
@@ -48,7 +48,7 @@ export default function ClientWrapper({others}: ClientWrapperProps) {
 
       <AnimatePresence mode="wait">
         {mode === 'transaction' && <AddTrans />}
-        {mode === 'lendborrow' && <Lend />}
+        {mode === 'lendborrow' && <Lend others = {others}/>}
         {mode === 'split' && <Split others = {others}/>}
       </AnimatePresence>
     </div>

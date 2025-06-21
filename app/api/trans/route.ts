@@ -15,7 +15,7 @@ export async function POST(req: Request) {
 
     const payload = jwt.verify(token, SECRET_KEY);
 
-    const { trans, Lend, to, amt, desc } = await req.json();
+    const { trans, From, to, amt, desc } = await req.json();
 
     let username: string | undefined;
     if (typeof payload === "object" && payload !== null && "username" in payload) {
@@ -31,6 +31,6 @@ export async function POST(req: Request) {
         return NextResponse.json({ success: true });
     }
 
-    await LendTrans(Lend, username, to, amt, desc)
+    await LendTrans(From, username, to, amt, desc)
     return NextResponse.json({ success: true });
 }

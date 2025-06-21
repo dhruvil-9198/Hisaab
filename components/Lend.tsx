@@ -3,22 +3,42 @@
 import { useState } from "react";
 import { motion } from 'framer-motion';
 import toast, { Toaster } from 'react-hot-toast';
+import Dropdown from "./Dropdown";
 
-export default function Lend() {
-    const [Lend, setLend] = useState(true);
+type TransactionType = {
+    id: string,
+    username: string,
+    userId: string,
+    balance: Number,
+};
+
+type ClientWrapperProps = {
+    others: TransactionType[];
+};
+
+export default function Lend({ others }: ClientWrapperProps) {
+    const [parsed, setParsed] = useState(others);
 
 
     const [err, seterr] = useState('')
-    const [party, setParty] = useState('');
+    const [from, setFrom] = useState('');
+    const [LendTo, setLendTo] = useState('');
     const [lendAmount, setLendAmount] = useState('');
     const [lendDesc, setLendDesc] = useState('');
 
+    const [SelectedFrom, setSelectedFrom] = useState<TransactionType>();
+    const [selectedTo, setSelectedTo] = useState<TransactionType>();
+
     const handleAddTransaction = async () => {
-        if (!party.trim() || !lendAmount.trim()) {
+        if (!LendTo.trim() || !from.trim() || !lendAmount.trim()) {
             seterr('To/From and Amount are required');
             return;
         }
-        if (lendAmount.startsWith('-')) {
+        else if (LendTo === from) {
+            seterr('Self transfer not allowed');
+            return;
+        }
+        else if (lendAmount.startsWith('-')) {
             seterr('Amount cannot be negative');
             return;
         }
@@ -31,15 +51,18 @@ export default function Lend() {
             },
             body: JSON.stringify({
                 trans: false,
-                Lend,
-                to: party,
+                From: from,
+                to: LendTo,
                 amt: lendAmount,
                 desc: lendDesc,
             }),
         });
 
         if (response.ok) {
-            setParty('');
+            setFrom('');
+            setLendTo('');
+            setSelectedFrom(undefined)
+            setSelectedTo(undefined)
             setLendAmount('');
             setLendDesc('');
             toast.success('Transaction added successfully!');
@@ -65,33 +88,6 @@ export default function Lend() {
                     Lend / Borrow
                 </h2>
 
-                <div className="flex justify-center space-x-4">
-                    <button
-                        onClick={() => {
-                            setLend(true);
-                            seterr('');
-                        }}
-                        className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 ${Lend
-                            ? 'bg-orange-500 text-white shadow-md'
-                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                            }`}
-                    >
-                        Lend
-                    </button>
-                    <button
-                        onClick={() => {
-                            setLend(false);
-                            seterr('');
-                        }}
-                        className={`px-4 py-2 rounded-md font-semibold transition-all duration-300 ${!Lend
-                            ? 'bg-orange-500 text-white shadow-md'
-                            : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
-                            }`}
-                    >
-                        Borrow
-                    </button>
-                </div>
-
                 <form
                     onSubmit={(e) => {
                         e.preventDefault();
@@ -101,15 +97,22 @@ export default function Lend() {
                 >
                     {err && <label className="block text-sm font-medium text-red-500 mb-1">{err}</label>}
                     <div className="space-y-2">
-                        <label className="block text-sm font-medium text-gray-300">
-                            {Lend ? 'To' : 'From'}
-                        </label>
-                        <input
-                            type="text"
-                            placeholder={Lend ? 'Paid to' : 'Received from'}
-                            value={party}
-                            onChange={(e) => setParty(e.target.value)}
-                            className="w-full px-3 py-2 bg-gray-800 text-white border border-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500"
+                        <label className="block text-sm font-medium text-gray-300">From</label>
+                        <Dropdown
+                            parsed={parsed}
+                            setParsed={setParsed}
+                            setParty={setFrom}
+                            selectedUser={SelectedFrom}
+                            setSelectedUser={setSelectedFrom}
+                        />
+
+                        <label className="block text-sm font-medium text-gray-300">To</label>
+                        <Dropdown
+                            parsed={parsed}
+                            setParsed={setParsed}
+                            setParty={setLendTo}
+                            selectedUser={selectedTo}
+                            setSelectedUser={setSelectedTo}
                         />
                     </div>
                     <div className="space-y-2">
